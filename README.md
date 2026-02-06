@@ -260,10 +260,9 @@ This work is released under [LICENSE] to encourage widespread use, iteration, an
 
 ## Contact
 
-**Author:** [Your name]  
-**Email:** [Your email]  
-**Twitter/X:** [Optional]  
-**LinkedIn:** [Optional]
+**Author:** Pauline Chew
+**Email:** pauline@oculusmgt.com
+**LinkedIn:** https://www.linkedin.com/in/om-pauline/
 
 **For collaboration, feedback, or questions about implementing NSC in your context, please reach out.**
 
