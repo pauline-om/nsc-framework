@@ -197,7 +197,7 @@ NSC doesn't replace existing alignment approaches—it constrains what kinds of 
 - Suggestions for improving evaluation protocols?
 - Ideas for governance applications?
 
-**Open an issue** or **email** [your contact info]
+**Open an issue** or **email** pauline@oculusmgt.com
 
 ### Collaboration Opportunities
 
