@@ -59,11 +59,6 @@ Many AI alignment failures share a common structure: systems optimize local obje
    - Real-world case studies
    - For regulators, congressional staff, standards bodies
 
-5. **[Outreach Templates](NSC_Outreach_Templates.md)**
-   - Email templates for researchers, industry, policy
-   - Workshop submission examples
-   - For sharing and collaboration
-
 ### Getting Started
 
 **If you're new to alignment:** Start with the [One-Pager](NSC_One_Pager_REFINED.md)
