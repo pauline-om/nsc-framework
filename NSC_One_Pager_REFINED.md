@@ -154,4 +154,4 @@ The Non-Separability Constraint offers a way to name, study, and test these assu
 - Read the full technical paper for formal treatment and skeptic's commentary
 - Review implementation sketches and evaluation strategies
 - Explore governance applications and policy translation
-- Contact: [Your contact information]
+- Contact: pauline@oculusmgt.com

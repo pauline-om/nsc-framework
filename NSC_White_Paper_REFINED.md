@@ -499,9 +499,10 @@ NSC helps us catch these failures early.
 
 ## Contact
 
-[Your name]  
-[Your contact information]  
-[Optional: Website/GitHub/Professional links]
+Pauline Chew
+pauline@oculusmgt.com
+https://www.linkedin.com/in/om-pauline/
+https://github.com/pauline-om/nsc-framework
 
 **For collaboration inquiries, feedback, or to discuss NSC implementation in your context, please reach out.**
 

@@ -488,7 +488,7 @@ NSC provides tools to catch these failures early.
 ---
 
 **Contact & Collaboration:**  
-[Your contact information]
+pauline@oculusmgt.com
 
 **Resources:**
 - One-page explainer: [Link]
