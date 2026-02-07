@@ -361,82 +361,27 @@ Tier 3 Systems (High coupling, long feedback delays, large scale):
 - Standards organizations (NIST, ISO)
 - Think tanks (CSET, FLI, etc.)
 
-### 5.2 Outreach Templates
-
-**Email Template for Researchers:**
-
-```
-Subject: NSC framework for alignment failure detection - seeking feedback
-
-Hi [Name],
-
-I've been developing a framework that reframes multiple alignment failures (Goodhart's Law, mesa-optimization, reward hacking) as violations of a single structural constraint: the separability assumption.
-
-The Non-Separability Constraint (NSC) provides:
-- A unifying lens across alignment subfields
-- Practical evaluation protocols (correlation tests, coupling sensitivity analysis)
-- Earlier detection of scale-related risks
-
-I've attached a one-pager with the core concept and implementation examples.
-
-Given your work on [their specific research area], I'd value your perspective on whether this framing seems useful or if you see gaps I'm missing.
-
-No obligation to respond - I know your time is limited. But if this resonates, I'd be happy to discuss further.
-
-Best,
-[Your name]
-```
-
-**Workshop Submission Abstract (300 words):**
-
-```
-The Non-Separability Constraint: A Unifying Framework for Alignment Failure Detection
-
-Many AI alignment failures share a common structure: systems optimize local objectives while treating downstream effects as external, leading to task success alongside systemic degradation. We propose the Non-Separability Constraint (NSC) as a unifying framework for understanding and detecting these failures.
-
-NSC states that optimization must explicitly model downstream interdependence and systemic coupling, particularly under scale. We demonstrate that canonical alignment problems—Goodhart's Law, reward hacking, mesa-optimization, and multi-agent miscoordination—can be reframed as NSC violations.
-
-We provide three practical evaluation protocols:
-1. Correlation testing between task performance and system health proxies
-2. Coupling sensitivity analysis measuring behavioral adaptation to environment changes
-3. Temporal robustness testing under delayed feedback conditions
-
-These protocols enable early detection of alignment failures before deployment. We present worked examples showing how NSC-compliant systems sacrifice short-term task performance for long-term systemic stability.
-
-NSC bridges technical alignment research and governance by translating abstract concepts into policy-relevant language. Separability violations map directly to regulatory concerns around externalities, systemic risk, and scale-dependent safety properties.
-
-Key contributions:
-- Unified conceptual framework collapsing multiple failure modes
-- Copy-paste evaluation templates for immediate implementation
-- Governance translation enabling non-technical stakeholder communication
-- Demonstration that abstraction limits are themselves alignment-relevant
-
-This work does not propose new training methods or architectures. Instead, it provides a diagnostic lens for identifying when existing approaches will fail at scale due to structural assumptions about agent-environment separability.
-
-We argue that as AI capabilities increase, failures driven by separability assumptions will dominate failures driven by mis-specified values. NSC offers a framework for addressing these failures upstream of deployment.
-```
-
 ---
 
-## 6. Addressing Common Objections
+## 5. Addressing Common Objections
 
-### 6.1 "Isn't this just systems thinking?"
+### 5.1 "Isn't this just systems thinking?"
 
 **Response:** Systems thinking is descriptive. NSC is prescriptive—it's a testable constraint on system design. We provide concrete evaluation protocols and failure criteria that systems thinking doesn't offer.
 
-### 6.2 "Won't modeling downstream effects be intractable?"
+### 5.2 "Won't modeling downstream effects be intractable?"
 
 **Response:** NSC doesn't require perfect world models. Even coarse proxies for system health (resource consumption, error rates, user satisfaction trends) outperform ignoring coupling entirely. The bar is "better than assuming separability," not "perfect omniscience."
 
-### 6.3 "This will reduce performance on benchmarks."
+### 5.3 "This will reduce performance on benchmarks."
 
 **Response:** Likely yes, on narrow benchmarks that don't measure systemic effects. But NSC predicts these systems will collapse under real-world deployment where coupling matters. We're trading Goodhart-able benchmark scores for actual robustness.
 
-### 6.4 "How is this different from just having better reward functions?"
+### 5.4 "How is this different from just having better reward functions?"
 
 **Response:** NSC operates upstream of rewards. It's a constraint on what kinds of abstractions are permissible when designing reward functions. A "better reward function" that still assumes separability will fail under NSC analysis.
 
-### 6.5 "Can you give an example of a deployed system that would have benefited from NSC?"
+### 5.5 "Can you give an example of a deployed system that would have benefited from NSC?"
 
 **Response:**
 
@@ -448,23 +393,23 @@ In each case, local optimization succeeded while systemic outcomes degraded—th
 
 ---
 
-## 7. Next Steps for Adoption
+## 6. Next Steps for Adoption
 
-### 7.1 For Researchers
+### 6.1 For Researchers
 
 1. **Run NSC evals on your current models** using the templates above
 2. **Compare results** across model sizes, architectures, training methods
 3. **Publish findings** showing when/where NSC violations appear
 4. **Develop better proxies** for system health in your domain
 
-### 7.2 For Safety Teams
+### 6.2 For Safety Teams
 
 1. **Integrate NSC tests** into your evaluation pipeline
 2. **Track coupling sensitivity** as a key safety metric
 3. **Establish thresholds** for acceptable correlation between task/health metrics
 4. **Build monitoring dashboards** showing real-time NSC compliance
 
-### 7.3 For Policymakers
+### 6.3 For Policymakers
 
 1. **Include NSC language** in AI safety standards
 2. **Require coupling assessments** for high-risk deployments
@@ -491,6 +436,6 @@ NSC provides tools to catch these failures early.
 pauline@oculusmgt.com
 
 **Resources:**
-- One-page explainer: [Link]
-- Full technical paper: [Link]
-- Code repository (coming soon): [Link]
+- One-page explainer: [(https://github.com/pauline-om/nsc-framework/blob/main/NSC_One_Pager_REFINED.md])
+- Full technical paper: [https://github.com/pauline-om/nsc-framework/blob/main/NSC_White_Paper_REFINED.md]
+- Code repository (coming soon): [tbd]
