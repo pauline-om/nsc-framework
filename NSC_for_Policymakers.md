@@ -438,9 +438,9 @@ A: NSC violations often cross borders (e.g., trading algorithms affecting global
 ## Resources and Contact
 
 **For more information:**
-- Technical paper: [link]
-- Implementation guide: [link]
-- Example evaluation protocols: [link]
+- Technical paper: [https://github.com/pauline-om/nsc-framework/blob/main/NSC_White_Paper_REFINED.md]
+- Implementation guide: [[link](https://github.com/pauline-om/nsc-framework/blob/main/NSC_Practice_Deployment_REFINED.md)]
+- Example evaluation protocols: [coming soon]
 
 **For questions or collaboration:**
 [Your contact information]
