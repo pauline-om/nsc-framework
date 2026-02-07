@@ -252,9 +252,7 @@ A: NSC requirements scale with risk. Low-coupling, small-scale systems face mini
 
 ## License
 
-[Choose appropriate license - suggest MIT or CC BY 4.0 for maximum adoption]
-
-This work is released under [LICENSE] to encourage widespread use, iteration, and collaboration.
+This work is released under [MIT LICENSE] to encourage widespread use, iteration, and collaboration.
 
 ---
 
