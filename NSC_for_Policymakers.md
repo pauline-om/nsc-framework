@@ -443,7 +443,8 @@ A: NSC violations often cross borders (e.g., trading algorithms affecting global
 - Example evaluation protocols: [coming soon]
 
 **For questions or collaboration:**
-[Your contact information]
+Pauline Chew pauline@oculusmgt.com
+https://www.linkedin.com/in/om-pauline/ 
 
 **For case studies in your specific regulatory domain:**
 We can provide sector-specific NSC analysis for:
