@@ -363,25 +363,25 @@ Tier 3 Systems (High coupling, long feedback delays, large scale):
 
 ---
 
-## 5. Addressing Common Objections
+## 6. Addressing Common Objections
 
-### 5.1 "Isn't this just systems thinking?"
+### 6.1 "Isn't this just systems thinking?"
 
 **Response:** Systems thinking is descriptive. NSC is prescriptive—it's a testable constraint on system design. We provide concrete evaluation protocols and failure criteria that systems thinking doesn't offer.
 
-### 5.2 "Won't modeling downstream effects be intractable?"
+### 6.2 "Won't modeling downstream effects be intractable?"
 
 **Response:** NSC doesn't require perfect world models. Even coarse proxies for system health (resource consumption, error rates, user satisfaction trends) outperform ignoring coupling entirely. The bar is "better than assuming separability," not "perfect omniscience."
 
-### 5.3 "This will reduce performance on benchmarks."
+### 6.3 "This will reduce performance on benchmarks."
 
 **Response:** Likely yes, on narrow benchmarks that don't measure systemic effects. But NSC predicts these systems will collapse under real-world deployment where coupling matters. We're trading Goodhart-able benchmark scores for actual robustness.
 
-### 5.4 "How is this different from just having better reward functions?"
+### 6.4 "How is this different from just having better reward functions?"
 
 **Response:** NSC operates upstream of rewards. It's a constraint on what kinds of abstractions are permissible when designing reward functions. A "better reward function" that still assumes separability will fail under NSC analysis.
 
-### 5.5 "Can you give an example of a deployed system that would have benefited from NSC?"
+### 6.5 "Can you give an example of a deployed system that would have benefited from NSC?"
 
 **Response:**
 
@@ -393,23 +393,23 @@ In each case, local optimization succeeded while systemic outcomes degraded—th
 
 ---
 
-## 6. Next Steps for Adoption
+## 7. Next Steps for Adoption
 
-### 6.1 For Researchers
+### 7.1 For Researchers
 
 1. **Run NSC evals on your current models** using the templates above
 2. **Compare results** across model sizes, architectures, training methods
 3. **Publish findings** showing when/where NSC violations appear
 4. **Develop better proxies** for system health in your domain
 
-### 6.2 For Safety Teams
+### 7.2 For Safety Teams
 
 1. **Integrate NSC tests** into your evaluation pipeline
 2. **Track coupling sensitivity** as a key safety metric
 3. **Establish thresholds** for acceptable correlation between task/health metrics
 4. **Build monitoring dashboards** showing real-time NSC compliance
 
-### 6.3 For Policymakers
+### 7.3 For Policymakers
 
 1. **Include NSC language** in AI safety standards
 2. **Require coupling assessments** for high-risk deployments
