@@ -60,7 +60,7 @@ This is the same idea as the white paper's Section 2.1, but every symbol in it i
 
 The white paper treats "system health" as though it's a single well-defined quantity waiting to be read off. It isn't. S_t is whatever the true (possibly high-dimensional, possibly unobserved) state is, and system health is a scalar summary H_t = g(S_t) chosen by whoever runs the evaluation. This choice is doing real work and can silently reintroduce the exact problem NSC is trying to solve: if g is itself a proxy that can be optimized against, an NSC-compliant system by this definition can still be behaving badly relative to whatever g failed to capture. Any application of this framework should say explicitly what g is, why it was chosen, and what it's known to miss. The white paper doesn't do this in any of its worked examples; the "system health" in the customer-service case (Section 8) is asserted, not constructed.
 
-## 5. What this buys you over the original phrasing
+## 5. Glossary
 
 - c is estimable from data using existing causal-inference tools, rather than being an unexplained symbol.
 - s is a real, computable sensitivity, which turns "is the coupling represented in M or f" from a qualitative judgment call into a number you can put a threshold on.
