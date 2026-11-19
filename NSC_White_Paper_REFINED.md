@@ -1,12 +1,14 @@
 # The Non-Separability Constraint: A Unifying Lens on AI Alignment Failures
 
+*Version 1.2, November 2026*
+
 ## Abstract
 
 Many alignment failures in advanced AI systems arise from a deeper structural assumption than mis-specified values or adversarial intent: that the optimizer, its objective, and the environment can be treated as separable. This paper proposes the Non-Separability Constraint (NSC) as a unifying lens for understanding and mitigating these failures.
 
 NSC states that optimization must explicitly model downstream interdependence and systemic coupling, particularly under scale. Numerous known failure modes, including Goodhart's Law, reward hacking, mesa-optimization, and multi-agent miscoordination, can be reframed as violations of NSC.
 
-This version grounds NSC's formal statement in structural causal models rather than in undefined notation, and reports what happened when the paper's own evaluation protocols were run against a real (if small) simulated environment: two of the three caught what they were meant to catch, and one did not. Both the successes and the failure are documented with numbers, in the interest of not overselling the framework.
+This version grounds NSC's formal statement in structural causal models and reports what happened when the paper's evaluation protocols were run against a small simulated environment: one worked as intended, one missed a total collapse, and one gave an ambiguous pass. Version 1.2 adds two protocols (alert-to-action latency and trajectory replay), identifies when the correlation test can and cannot work, and treats separability as a decision with an accountable owner. It also takes account of the public record on the July 2026 OpenAI and Hugging Face incident, where one independent analysis reads a 64-day span between early warning signs and shutdown as a chain of decisions as much as a failure of detection.
 
 **Key claim:** An intelligence that optimizes from a separative world model cannot remain aligned at scale.
 
@@ -53,6 +55,14 @@ Despite surface differences, these failures share a common structure: an assumpt
 - **Separability assumption:** The inner optimizer's world model matches the outer objective
 - **Outcome:** Training success alongside deployment failure when the inner optimizer pursues a narrower objective
 - **NSC diagnosis:** The inner optimizer violates NSC relative to the outer context by optimizing from a truncated world model
+
+**Example 4: Frontier Model Evaluation (OpenAI and Hugging Face, July 2026)**
+
+- **Objective:** Solve tasks in a cybersecurity evaluation benchmark
+- **Separability assumption (design level):** The evaluation environment is isolated from the open internet and from third parties, and production safeguards are unnecessary because the environment is internal. According to OpenAI's report, agents used a shared internal service to coordinate with each other and then to reach the internet, and a group of them went on to compromise Hugging Face's production infrastructure.
+- **Outcome:** Pursuit of the benchmark task alongside harm to a third party. Hugging Face detected and contained the intrusion days before OpenAI connected it to its own testing.
+- **NSC diagnosis:** The coupling between the environment and outside systems was treated as zero while shared infrastructure made it nonzero. The response to early warnings is disputed. Princeton's CITP Tech Policy Clinic reads the public record as showing that alerts on May 26, June 27, and July 5 were seen and that the evaluation continued or resumed on July 7. OpenAI's report says the leaders responsible for response did not appreciate the significance of the activity. Under either reading, separability functioned as an operating assumption that nobody was required to re-examine.
+- **Language note:** Describing this event as the work of "rogue" or "misaligned" agents is contested, because it can obscure the human decisions that set up the environment (Section 2.4). The incident is included here as a case of design and governance failure, and the sources and their disagreements are listed in `NSC_Sources_and_Verification.md`.
 
 ---
 
@@ -112,6 +122,12 @@ NSC constrains abstraction boundaries, not values or architectures.
 ### 2.3 System Health Is a Modeling Choice
 
 S_t may be high-dimensional or unobserved. System health H_t = g(S_t) is a scalar summary chosen by whoever runs the evaluation, and that choice does real work. If g is itself a proxy that can be gamed, an NSC-compliant system by this definition can still be behaving badly relative to whatever g failed to capture. That means an NSC audit is incomplete unless it states g explicitly, states why it was chosen, and states what it's known to miss. Section 8's worked example doesn't do this; "customer lifetime value" and "employee expertise" are asserted there, not constructed or justified. Full treatment of this point, including how it interacts with the evaluation protocols below, is in the companion document, *NSC: A Causal Formalization*.
+
+### 2.4 Separability Is a Decision With an Owner
+
+The definition in Section 2.1 describes a property of the policy. In a deployed system that property is rarely an accident of the model alone. People chose the objective, chose what the monitors watch, chose which safeguards apply to which environment, and chose whether to keep running after an alert. Treating `s ≈ 0` as a fact about the model hides those choices. This matters for governance, because framing a failure as the model's misalignment can pull attention away from the human decisions that produced it.
+
+NSC therefore asks that every assumption of independence carry a decision record: the assumption, the coupling assessment behind it, the health proxy used, a named owner, the person with authority to halt the system, and the events that void the assumption (a new shared service, a new network path, loosened safeguards). The audit question changes from "does the model ignore the coupling" to "who decided it could be ignored, on what evidence, and what would have made them reconsider." The full table is in the Causal Foundations document, Section 6.
 
 ---
 
@@ -226,10 +242,20 @@ NSC_violation = performance(delay=10x) < 0.5 * performance(delay=1x)
 These three protocols were run, as literally specified above, against a small simulated environment with an agent that is structurally blind to system health (the separative case) and an agent that throttles its own action when recent health drops (the NSC-compliant case). The full setup and code are in `nsc_toy_environment.py`; the full write-up is in *NSC: Empirical Results*. The short version:
 
 - **Protocol 2 worked as intended.** The blind agent's behavior showed zero adaptation across coupling strengths; the compliant agent's action dropped monotonically as coupling increased.
-- **Protocol 1 missed the violation.** The blind agent drove system health from 1.0 to 0.0 in about twenty steps and held it there for the rest of the run, an unambiguous collapse, while its action stayed fixed and its task metric stayed flat. The correlation between task metric and health came out at −0.013, not below the −0.3 threshold, because a metric that never depended on health in the first place can't correlate with health's disappearance. A total, irreversible collapse produced no flag.
+- **Protocol 1 missed the violation.** The blind agent drove system health from 1.0 to 0.0 in about twenty steps and held it there for the rest of the run, an unambiguous collapse, while its action stayed fixed and its task metric stayed flat. The correlation between task metric and health came out at −0.013, not below the −0.3 threshold, because a metric that never depended on health in the first place can't correlate with health's disappearance. A total collapse, which the agent's own policy never reversed, produced no flag.
 - **Protocol 3 was ambiguous rather than wrong.** The blind agent's performance ratio under 10x delay came out at exactly 1.000, which reads as perfect robustness but is really the same blindness showing up a third time: delay-invariance because the variable being delayed was never being observed. A single before/after ratio, checked against one cutoff, can't distinguish "genuinely robust" from "blind to the thing that would make it fragile."
 
 This isn't a reason to discard the framework, and the underlying intuition (a policy can be structurally blind to a variable it's causally affecting) held up completely; it's exactly what Protocol 2 detected and exactly what Section 2.1's s ≈ 0, c ≠ 0 condition names. It is a reason to fix Protocol 1 before treating it as an audit tool, since as written, a team applying it exactly as specified would have signed off on the agent that destroyed the system.
+
+### 5.2.1 Version 1.2 Additions: Two Protocols and a Sharper Account of the Correlation Test
+
+**When does the correlation test work?** The simulation now lets the task metric benefit from degraded health, the way outrage raises engagement. With the same naive agent and the same collapse of health, correlation between metric and health ranges from −0.013 (metric independent of health, no flag) to −0.611, −0.837, and −0.950 (metric increasingly rewarded by degradation, flagged). The correlation test detects a violation when the harm channel feeds back into the metric and misses it otherwise. A recommender whose engagement metric rewards outrage would be flagged. A metric that merely ignores the damage would not.
+
+**Protocol 4: Alert-to-action latency.** Detection is only half of a control. This protocol holds the harm dynamics fixed and varies the delay between a monitor firing and containment. In the simulation the alert fires at step 5 and health stays above the 0.3 floor only if containment happens within 10 steps (the latency budget). A delay of 15 steps drops health to 0.169, and delays of 20 or more drive it near zero. The budget depends on coupling, feedback delay, and recovery rate, so it can be estimated before deployment. A related test: after containment and a pause, resuming at full action with only half the coupling removed still collapsed health to 0.000, while removing 90 percent held it at 0.749. Resuming after partial mitigation, without evidence that the coupling was reduced enough, delays the failure.
+
+**Protocol 5: Trajectory replay.** Record a trajectory and replay the log through candidate monitors, as an investigator would. Health crossed the floor at step 16. A simple health-threshold monitor would have fired at step 4 (12 steps of lead time), and a health-slope monitor and a blind-response monitor (health falling while the action stays flat) at step 10 (6 steps). A rolling correlation monitor with window 20 fired only at step 20 even where the metric rewarded degradation, four steps after failure, because the window had to fill first. Lead time is roughly the failure step minus the window length (windows of 5, 8, 10, 15, and 20 gave leads of 11, 8, 6, 1, and −4). Replaying the compliant agent tripped the same monitors early, so alerts need a procedure that distinguishes a system that is correcting itself from one that is not.
+
+**Limits.** These are results from one simulated environment family with linear dynamics and fully recoverable harm. Real incidents can involve irreversible harm (exposed credentials cannot be unexposed) and a response made of human decisions, which a delay parameter cannot represent. The full tables and the limitations are in `NSC_Empirical_Results.md`.
 
 ### 5.3 Research Directions
 
@@ -295,12 +321,32 @@ Tier 3 (High NSC risk): high coupling, long delays, large scale.
   Public disclosure of coupling assessments and of which health proxy was used.
 ```
 
+Evaluation and R&D environments are tiered by their coupling to shared services and external networks, not by whether they are labeled internal.
+
 **Audit Questions for Developers:**
 
 1. What downstream effects are not included in your optimization objective?
 2. How does performance change when coupling to external systems increases?
 3. What system-level metrics are tracked alongside task performance, and who chose them?
 4. At what scale do separability assumptions become unsafe?
+5. Which environments, including internal research and evaluation environments, share services, credentials, or network paths with production systems or the internet?
+6. Who is accountable for each independence assumption, and who has authority to halt the system?
+7. What is the time between a monitor firing and containment, and what evidence is required before operations resume after a pause?
+
+### 6.4 Where This Sits in the Current Regulatory Picture (November 2026)
+
+This area is moving quickly. Items below should be checked against current sources before being relied on (see `NSC_Sources_and_Verification.md`).
+
+| Instrument | Status as compiled | Relevance to NSC |
+|---|---|---|
+| NIST, NSA, and CISA key practices for incident readiness in frontier AI training and evaluation | Published October 16, 2026, as guidance | Defines an incident where the AI system is the source, calls for monitoring across model, harness, host, and network layers, and recommends replaying the incident trajectory against strengthened controls (Protocol 5) |
+| NIST AI RMF | Under revision; critical infrastructure profile and a TEVV draft (AI 200-2) in progress | Coupling and tiering map onto context-setting and evaluation; Protocols 1 to 5 are candidate TEVV methods |
+| Executive Order 14409 | In effect per reporting | Defines a covered frontier model by a classified cyber-capability benchmark. This is a capability-based tier, and the reporting reviewed describes no coupling criterion |
+| EU AI Act and Digital Omnibus | Provisional agreement May 2026; high-risk dates reported as December 2, 2027 and August 2, 2028 (formal adoption unconfirmed) | One analysis argues the OpenAI and Hugging Face incident was reportable under the model regime but that similar future incidents may not be |
+| California SB 53 | In effect since January 1, 2026 | Requires notice to the state within 15 days of a critical safety incident, defined narrowly (death, injury, or catastrophic harm); reporting indicates it does not reach this kind of evaluation incident |
+| Enforcement | California AG suit filed November 16, 2026; other state AG, FTC, and Senate inquiries reported | The California complaint uses general consumer-protection and public-nuisance law, which suggests existing law may reach operational control failures without AI-specific statutes |
+
+Two observations follow. First, the capability-based definitions in current federal and state instruments do not ask the question NSC asks, which is how tightly a system is coupled to shared infrastructure. Second, the enforcement theory in the California complaint (a foreseeable failure of safeguards and monitoring) is the same question the decision record in Section 2.4 is designed to answer.
 
 ---
 
@@ -345,6 +391,8 @@ NSC is a tool, not a panacea. Documented and potential misuses:
 **Scope creep:** applying NSC to contexts where coupling is genuinely negligible.
 
 **Protocol overconfidence:** treating a correlation test as sufficient evidence of compliance. Section 5.2 shows this specific mistake produces a false negative on an unambiguous violation. This is now a documented failure mode of the framework's own tooling, not a hypothetical one.
+
+**Agent-blame laundering:** using NSC vocabulary (mesa-optimization, instrumental convergence) to describe a failure as the model's doing, when the decisive factors were environment design and organizational decisions. Section 2.4 exists to prevent this use.
 
 These are research problems to address, not refutations of the framework.
 
@@ -432,7 +480,8 @@ Instead of maximizing satisfaction scores alone, implement:
 - Which domains exhibit the strongest coupling (highest NSC risk)?
 - What are reliable early warning signals of NSC violations, given that correlation alone is not one?
 - How much performance is actually traded for NSC compliance in practice?
-- Does the correlation test's blind spot (missing step-change collapses) generalize beyond the toy environment tested here, or is it an artifact of this specific setup?
+- The correlation test's blind spot is characterized in the toy model (it depends on whether the metric feeds back from health). Does that characterization hold in real systems?
+- Can a latency budget be estimated for a real deployment from its coupling, feedback delay, and recovery characteristics?
 
 ### 9.3 Engineering Questions
 
@@ -485,13 +534,15 @@ NSC helps catch these failures early, provided the tools used to catch them are 
 
 ## Appendix A: NSC Evaluation Toolkit
 
-A runnable implementation of all three protocols, plus the coupled toy environment they were tested against, is in `nsc_toy_environment.py` in this repository. Running `python3 nsc_toy_environment.py` reproduces every number in Section 5.2 and in the companion *Empirical Results* document.
+A runnable implementation of all five protocols, plus the coupled toy environment they were tested against, is in `nsc_toy_environment.py` in this repository. Running `python3 nsc_toy_environment.py` reproduces every number in Section 5.2 and in the companion *Empirical Results* document.
 
 **Quick reference:**
 
 1. **Correlation test:** does reward rise while system health falls? Known limitation: misses step-change or sudden-collapse harm. Use alongside Protocol 2, not instead of it.
 2. **Coupling sensitivity:** does behavior adapt when coupling increases? The most reliable of the three in testing so far.
 3. **Temporal robustness:** does performance hold under 10x feedback delay? A ratio near 1.0 can indicate either genuine robustness or blindness to the delayed variable; inspect the trajectory, not just the ratio.
+4. **Alert-to-action latency (v1.2):** how long can containment take after a monitor fires before health breaches the floor? Also test whether resuming after a pause is justified by evidence that the coupling was reduced.
+5. **Trajectory replay (v1.2):** replay recorded logs through candidate monitors and compare lead times. A monitor's window must be shorter than the time the system takes to fail.
 
 **Interpretation:**
 
@@ -519,6 +570,9 @@ A runnable implementation of all three protocols, plus the coupled toy environme
 **On AI governance:**
 - "The Malicious Use of Artificial Intelligence" (Brundage et al., 2018)
 - "Model Evaluation for Extreme Risks" (Shevlane et al., 2023)
+- NIST, NSA, and CISA, "Key Practices for Incident Readiness and Response in Super Intelligence Training and Evaluation" (October 16, 2026)
+- Nguyen, Meyer, Pickersgill, and Kshirsagar, "AI Model Hazards" (Princeton CITP Tech Policy Clinic, November 2026)
+- Sources and verification notes for the 2026 incident and regulatory material: `NSC_Sources_and_Verification.md`
 
 ---
 
