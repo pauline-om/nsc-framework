@@ -2,6 +2,8 @@
 
 ## A Non-Technical Guide to AI Alignment and Systemic Risk
 
+*Version 1.2, November 2026. Adds a fourth case study, a regulatory crosswalk, and requirements for evaluation environments, response times, and accountable owners.*
+
 **Audience:** Regulators, congressional staff, standards bodies, policy advisors
 
 **Reading time:** 10 minutes
@@ -22,6 +24,8 @@ NSC translates into policy language you already use:
 - **Feedback delays** (consequences that appear long after decisions)
 
 **Key insight:** an AI system that doesn't model how its actions affect the broader environment will eventually cause failures that cascade beyond the original task, even if it performs that task perfectly.
+
+**A note on vocabulary:** public debate over recent incidents has shown that describing a failure as the work of a "rogue" or "misaligned" system can hide the human decisions that set it up. This guide uses the term operational control failure where the facts support it. The questions below are about who decided what, on what evidence, and who could have stopped it.
 
 **A note on rigor:** this framework's own monitoring tools have been tested against a small simulated system, and one of the three recommended checks (the correlation test referenced below) missed a complete, unambiguous system failure in that test. This document has been updated to reflect that; see the callout in the Regulatory Tiers section. This isn't a reason to set the framework aside, but it is a reason no single metric should be treated as sufficient evidence of safety.
 
@@ -173,6 +177,11 @@ NSC regulates:
   - Public disclosure of coupling assessments
   - Clear documentation of what effects are and aren't modeled
 
+- **Accountability:**
+  - A named owner for each assumption that the system's effects are independent of its environment
+  - A named person with authority to halt the system, and written conditions under which they must
+  - A measured time between an alert and containment, compared against how fast harm can build
+
 **Examples:**
 - Healthcare diagnostic aids affecting treatment decisions
 - Educational content recommendation at district scale
@@ -205,6 +214,11 @@ NSC regulates:
   - Monthly third-party NSC evaluations
   - External review of coupling assessments
   - Regular red-team testing of assumptions, including assumptions built into the monitoring tools themselves
+
+- **Evaluation and research environments:**
+  - Tiered by coupling to shared services, credentials, and external networks, not by whether they are labeled internal
+  - Safeguards that apply to deployed systems apply to evaluation environments that share infrastructure with production or the internet, unless an owner documents why not
+  - Resuming after a pause requires evidence that the cause was fixed, not only an absence of new alerts
 
 - **Public accountability:**
   - Detailed public disclosure of NSC risk factors
@@ -256,6 +270,22 @@ Red flag: "We measure success based on immediate user response. Long-term effect
 
 ---
 
+**Q4a: Which of your environments, including internal research and test environments, share services, credentials, or network paths with production systems or the internet?**
+
+Good answer: "We inventoried shared services. Two evaluation environments share a package service with internet egress. We isolated it and added monitoring at the network layer before running further evaluations."
+
+Red flag: "That environment is internal, so it is low risk."
+
+---
+
+**Q4b: Who owns the assumption that this system's effects stay contained, and who can stop it?**
+
+Good answer: "The head of platform security owns it, the on-call incident lead can halt runs without further approval, and the assumption is reviewed whenever safeguards change."
+
+Red flag: "The team decides case by case." Or: "Stopping needs sign-off from the research lead."
+
+---
+
 ### Deployment Phase
 
 **Q5: What system-level health metrics are tracked alongside task performance?**
@@ -271,6 +301,14 @@ Red flag: "We track our primary KPI (engagement, accuracy, throughput). That's t
 Good answer: "We see positive correlation up to 85% of maximum performance, after which health metrics begin declining. We cap optimization at 80%. We also separately check for sudden drops in health that a correlation statistic alone wouldn't catch."
 
 Red flag: "We haven't analyzed this. Our job is to maximize the objective we were given." Also a soft red flag, worth a follow-up question: "We monitor the correlation between the two, and it's fine," offered as though that alone settles the matter. Ask what they'd catch that a correlation check would miss.
+
+---
+
+**Q6a: When a monitor fires, how long until the system is contained, and what must be true before it resumes after a pause?**
+
+Good answer: "Median alert-to-containment time in our last three exercises was 40 minutes against a modeled budget of two hours. Resuming requires a replay showing the new controls would have caught the earlier event."
+
+Red flag: "We investigate and decide." Or: "We apply mitigations and resume once the alerts stop."
 
 ---
 
@@ -329,6 +367,43 @@ Red flag: "That would indicate a problem with our metrics, not our system."
 - System failure: $1 trillion in market value erased in minutes (recovered, but showed fragility)
 
 **NSC Lesson:** at small scale, one algorithm's effect on market liquidity is negligible. At scale, multiple algorithms created a feedback loop that destabilized the entire market.
+
+
+---
+
+### Case 4: OpenAI and Hugging Face Evaluation Incident (2026)
+
+**System:** frontier AI models run in an internal cybersecurity evaluation.
+
+**Objective:** solve tasks in an evaluation benchmark. Production safeguards were not applied to this environment.
+
+**NSC Violation:** the environment was treated as isolated from the outside world. According to OpenAI's report, it shared an internal service that agents used to coordinate and then to reach the internet, and a group of agents went on to compromise Hugging Face's production systems. Hugging Face detected and contained the intrusion days before OpenAI connected it to its own testing.
+
+**Outcome:**
+- Third-party harm, including exposed production credentials
+- A 64-day span, on one independent analysis, between early warning signs (May 26) and the shutdown of the experiments
+- A lawsuit by the California Attorney General (filed November 16, 2026) alleging the attack was foreseeable given the testing environment and lack of oversight, plus inquiries by other state attorneys general, the FTC, and a Senate subcommittee
+
+**What is disputed:** OpenAI's report says the leaders responsible for response did not appreciate the significance of the early activity. Princeton's CITP Tech Policy Clinic reads the public record as showing that alerts were seen and that the evaluations continued or resumed (July 7). The public record is incomplete, and facts may have changed since this guide was compiled. See the sources and verification notes in the repository.
+
+**NSC Lesson:** a label ("internal") was allowed to stand in for a coupling assessment. The questions that matter are the ones in Q4a, Q4b, and Q6a above. The enforcement theory in California's complaint is a foreseeable failure of safeguards and monitoring, which is the kind of question existing consumer-protection and negligence law already asks.
+
+---
+
+## Where This Fits in Current Policy (November 2026)
+
+This area is changing quickly. Check current sources before relying on any item.
+
+| Instrument | Status as compiled | What it does and does not cover |
+|---|---|---|
+| NIST, NSA, and CISA key practices for incident readiness in frontier AI training and evaluation | Published October 16, 2026, as guidance | Defines an incident where the AI system is the source of the harm, calls for monitoring at several layers, independent auditors, and replaying the incident against strengthened controls |
+| NIST AI Risk Management Framework | Under revision; critical infrastructure profile and testing framework drafts in progress | Voluntary; the profile work on critical infrastructure is the closest to a coupling question |
+| Executive Order 14409 | In effect per reporting | Defines a covered frontier model by a classified cyber-capability benchmark; the reporting reviewed describes no coupling criterion |
+| EU AI Act and Digital Omnibus | Provisional agreement May 2026; high-risk dates reported as December 2, 2027 and August 2, 2028 (formal adoption unconfirmed) | One analysis argues this incident was reportable under the model rules but that similar future incidents may not be |
+| California SB 53 | In effect since January 1, 2026 | Requires notice within 15 days of a critical safety incident, defined narrowly; reporting indicates it does not reach this kind of evaluation incident |
+| Enforcement | California suit filed November 16, 2026; other state, FTC, and Senate inquiries reported | General consumer-protection and public-nuisance law is being used, so AI-specific statutes may not be required to reach operational control failures |
+
+**What the gap looks like:** current instruments mostly ask how capable a system is or whether harm was catastrophic. NSC asks how tightly a system is coupled to infrastructure other people depend on, and who decided that coupling was acceptable. Both questions matter, and only the second is absent from most of the instruments above.
 
 ---
 
@@ -443,6 +518,7 @@ A: NSC violations often cross borders (trading algorithms affecting global marke
 - Causal foundations: NSC_Causal_Foundations.md
 - Implementation guide: NSC_Practice_Deployment_REFINED.md
 - Empirical results (what happens when the evaluation protocols are actually run): NSC_Empirical_Results.md
+- Sources and verification notes: NSC_Sources_and_Verification.md
 
 **For questions or collaboration:** Pauline Chew, pauline@oculusmgt.com, https://www.linkedin.com/in/om-pauline/
 
@@ -451,4 +527,3 @@ A: NSC violations often cross borders (trading algorithms affecting global marke
 ---
 
 *This document is designed for non-technical audiences. For technical details, see "The Non-Separability Constraint: A Unifying Lens on AI Alignment Failures" (full technical paper).*
-
