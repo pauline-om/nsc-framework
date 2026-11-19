@@ -1,6 +1,6 @@
 # NSC: A Causal Formalization
 
-*A proposed replacement for Section 2.1 of the white paper.*
+*The formal basis for Section 2 of the white paper. Version 1.2 (November 2026) adds Sections 6 to 8.*
 
 The original formal statement introduces an optimizer O, an objective f, an environment E, a world model M, and a coupling C, then says NSC is violated when M treats E as independent, a coupling C exists, and C isn't represented in M or f. As written this is a description of the idea in symbols, not a definition anyone could compute from data. Nothing here says what C is, how large is large enough to matter, or how you'd measure whether M "represents" it. Below is an attempt to say the same thing in a form that can actually be tested against a trajectory of data, using tools that already exist in causal inference rather than inventing new ones.
 
@@ -8,9 +8,9 @@ The original formal statement introduces an optimizer O, an objective f, an envi
 
 Treat the optimizer and its environment as a structural causal model (Pearl, *Causality*, 2009) with, at minimum, three variables evolving over time:
 
-- **A_t** — the action chosen by the optimizer at time t.
-- **M_t** — the task metric, the quantity the optimizer is trained or instructed to increase.
-- **S_t** — the coupled state variable, whatever the optimizer's action can plausibly affect beyond the task metric itself: discourse quality, market liquidity, an employee's skill level, a species population.
+- **A_t**, the action chosen by the optimizer at time t.
+- **M_t**, the task metric, the quantity the optimizer is trained or instructed to increase.
+- **S_t**, the coupled state variable, whatever the optimizer's action can plausibly affect beyond the task metric itself: discourse quality, market liquidity, an employee's skill level, a species population.
 
 The structural equations governing the system are:
 
@@ -60,7 +60,7 @@ This is the same idea as the white paper's Section 2.1, but every symbol in it i
 
 The white paper treats "system health" as though it's a single well-defined quantity waiting to be read off. It isn't. S_t is whatever the true (possibly high-dimensional, possibly unobserved) state is, and system health is a scalar summary H_t = g(S_t) chosen by whoever runs the evaluation. This choice is doing real work and can silently reintroduce the exact problem NSC is trying to solve: if g is itself a proxy that can be optimized against, an NSC-compliant system by this definition can still be behaving badly relative to whatever g failed to capture. Any application of this framework should say explicitly what g is, why it was chosen, and what it's known to miss. The white paper doesn't do this in any of its worked examples; the "system health" in the customer-service case (Section 8) is asserted, not constructed.
 
-## 5. Glossary
+## 5. What this buys you over the original phrasing
 
 - c is estimable from data using existing causal-inference tools, rather than being an unexplained symbol.
 - s is a real, computable sensitivity, which turns "is the coupling represented in M or f" from a qualitative judgment call into a number you can put a threshold on.
@@ -68,3 +68,43 @@ The white paper treats "system health" as though it's a single well-defined quan
 - It exposes the dependency on g(S_t) that the original document doesn't surface, which is arguably the single largest source of hidden error in any actual NSC audit: pick the wrong health proxy and you've reintroduced Goodhart's Law one level up.
 
 The toy simulation in `nsc_toy_environment.py` implements exactly this: c is a parameter you set directly (since it's a toy world, you get to play Pearl's demon and set do(A_t) yourself), s is estimated by comparing a policy that's structurally blind to S_t against one that isn't, and g(S_t) = S_t itself, made explicit rather than left implicit, precisely because in a toy world there's no excuse not to.
+
+## 6. Separability is a decision, and decisions have owners
+
+Section 3 defines separability as a property of the policy: `c ≠ 0` while `|s| < ε`. In a deployed system that property is almost never an accident of the model alone. Someone chose the objective, chose what the monitors watch, chose which safeguards apply to which environment, and chose whether to keep running after an alert. Treating `s ≈ 0` as a fact about the model hides those choices, and recent public debate over the OpenAI and Hugging Face incident shows the cost: framing a failure as the model's "misalignment" can pull attention away from the human decisions that set up the environment (see the Princeton CITP analysis in the sources file).
+
+The fix is to put the organization inside the model. Add a response variable `R_t` (what the organization does when a monitor fires) and a decision record `D` attached to every assumption of independence:
+
+| Field | What it records |
+|---|---|
+| Assumption | Which variable is treated as independent of the agent's actions |
+| Coupling assessment | The estimate of `c` (or why `c` was judged negligible), and the evidence |
+| Health proxy `g` | What was measured and what it is known to miss |
+| Owner | The named person or function accountable for the assumption |
+| Stop authority | Who can halt the system, and the conditions under which they must |
+| Re-review trigger | The events that void the assumption (new shared service, new network path, loosened safeguards) |
+
+This changes what an audit asks. "Does the model ignore the coupling" becomes "who decided it could be ignored, on what evidence, and what would have made them reconsider." The second question is one regulators and courts already know how to ask.
+
+## 7. When does the correlation test detect a violation?
+
+Section 2's structural equations include `M_t = f_M(A_t, S_t, V_t)`. A correlation between `M` and `S` over a trajectory carries information about the coupling only to the extent that `∂f_M/∂S ≠ 0`. The simulation in `nsc_toy_environment.py` shows both cases with the same naive agent and the same collapse of health:
+
+- `∂f_M/∂S = 0` (the metric ignores health): `r = -0.013`, no flag.
+- `∂f_M/∂S < 0` (the metric rewards degradation): `r` between `-0.611` and `-0.950`, flagged.
+
+**Proposition (empirical, one model family).** A correlation test can detect an NSC violation only when the harm channel feeds back into the metric. Tests that estimate `c` and `s` directly, by intervention or by replaying logs, do not depend on `f_M`.
+
+A second condition concerns time. A rolling-window correlation monitor with window `w` cannot fire before step `w`, so its lead time over a failure at step `T_fail` is roughly `T_fail − w`. In the simulation, windows of 5, 8, 10, 15, and 20 gave lead times of 11, 8, 6, 1, and −4 steps against a failure at step 16. The window has to be shorter than the time the system takes to fail.
+
+## 8. The response policy: latency budget and resume condition
+
+With `R_t` in the model, two quantities become measurable before deployment.
+
+**Latency budget.** Let `L` be the delay between a monitor firing and containment. The latency budget `L*` is the largest `L` for which health stays above a chosen floor. In the simulation `L* = 10` steps (alert at step 5, floor 0.3). It depends on `c`, the feedback delay, and the recovery rate, so it can be computed from the same quantities Section 2 already defines.
+
+**Resume condition.** In the linear toy model, steady-state health at action `a` is `S* = 1 − c·a / r`, where `r` is the recovery rate. After containment, resuming at coupling `c' = m·c` keeps health above zero only when `m·c·a < r`. With `c = 0.05` and `r = 0.02`, full-action operation requires `m < 0.4`; a floor of 0.3 requires `m < 0.28`. The runs agree: `m = 1.0` and `m = 0.5` collapsed to 0.000, `m = 0.1` held at 0.749, and `m = 0.0` recovered to 0.998. The general lesson is not the number but the form of the claim. **A decision to resume is itself an NSC claim that `c` has been reduced, and it needs the same kind of evidence as any other: a replay or intervention test under the modified controls, not the absence of new alerts.**
+
+## 9. Limits of this formalization
+
+The toy model is linear, recoverable, and has a single coupled variable. Real harms can be irreversible, many-dimensional, and strategic, and the response policy is made of human decisions that no delay parameter captures. Everything in Sections 6 to 8 is a framework for asking sharper questions of a real system, supported by one simulation, not a result about real systems.
