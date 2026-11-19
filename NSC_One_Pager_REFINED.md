@@ -2,6 +2,8 @@
 
 ## A Unifying Lens on AI Alignment Failures
 
+*Version 1.2, November 2026*
+
 ### What Problem Does NSC Address?
 
 Many AI alignment failures occur when systems optimize successfully according to their objective while producing harmful or destabilizing effects at the system level. These failures are often treated as distinct problems (Goodhart's Law, reward hacking, instrumental convergence, mesa-optimization), but they share a common root:
@@ -67,18 +69,24 @@ A working version of both agents, run against an actual simulated environment ra
 
 ---
 
-### Three NSC Evals You Can Run This Week
+### Five NSC Evals You Can Run This Week
 
 **1. Correlation Test**
 Does reward rise while a system health proxy falls? Track task performance against latent harm signals (resource consumption, error rates, downstream user metrics).
 
-*Caveat, found by actually running this:* correlation misses harm that shows up as a sudden collapse rather than a shared decline, because a metric that never tracked health in the first place won't correlate with health's disappearance. Don't rely on this test alone. See [Empirical Results](NSC_Empirical_Results.md).
+*Caveat, found by actually running this:* correlation catches the damage only when the metric itself rewards it. If the metric ignores health, even a total collapse shows up as a correlation near zero. Ask of your metric: does it go up when the thing we care about goes down? Don't rely on this test alone. See [Empirical Results](NSC_Empirical_Results.md).
 
 **2. Coupling Sensitivity Analysis**
 Does behavior change when you artificially increase environment coupling? Strengthen the feedback loop and measure whether the policy adapts. This one held up under testing.
 
 **3. Temporal Robustness Test**
 Does performance hold when you add a 10x delay to feedback? Introduce latency in the reward signal and check for delayed collapse. Treat a single before/after ratio as a starting point, not a verdict; the interesting information is often in the shape of the transient, not just the endpoints.
+
+**4. Alert-to-Action Latency (new in v1.2)**
+How long can your organization take to contain the system after a monitor fires before health breaches a floor? Compare that budget to your real response time. A pause is not a fix: resuming needs evidence that the coupling was reduced.
+
+**5. Trajectory Replay (new in v1.2)**
+Replay recorded logs through candidate monitors and compare lead times. A monitor's window has to be shorter than the time the system takes to fail.
 
 ---
 
@@ -90,6 +98,8 @@ NSC-compatible systems tend to:
 - Track system-wide health alongside task metrics, with the health proxy stated explicitly
 - Model themselves as causal participants in the environment
 - Degrade performance gracefully under scale rather than catastrophically
+- Name an owner for every assumption of independence, with authority to halt the system and written conditions for doing so
+- Tier evaluation and research environments by what they connect to, not by whether they are labeled internal
 
 ---
 
