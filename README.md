@@ -61,7 +61,7 @@ Many AI alignment failures share a common structure: systems optimize local obje
 
 5. **[Empirical Results](NSC_Empirical_Results.md)** (10 min read)
    - What happened when the three evaluation protocols were run against a real environment
-   - Two of the three, as originally specified, missed an unambiguous violation
+   - Five protocols tested. Shows when the correlation test works and when it does not, and how long a system can take to respond
    - Full reproduction instructions
 
 6. **[NSC for Policymakers](NSC_for_Policymakers.md)** (15 min read)
@@ -71,7 +71,11 @@ Many AI alignment failures share a common structure: systems optimize local obje
 
 ### Code
 
-- **[nsc_toy_environment.py](nsc_toy_environment.py)** - a minimal, runnable simulation implementing the three evaluation protocols against an actual coupled environment, rather than describing them in prose. Run it with `python3 nsc_toy_environment.py`.
+- **[nsc_toy_environment.py](nsc_toy_environment.py)** - a minimal, runnable simulation implementing the five evaluation protocols against an actual coupled environment, rather than describing them in prose. Run it with `python3 nsc_toy_environment.py`.
+
+### Sources
+
+- **[NSC_Sources_and_Verification.md](NSC_Sources_and_Verification.md)** - sources for the 2026 incident and regulatory material, where accounts disagree, and which items to verify before relying on them.
 
 ### Getting Started
 
@@ -105,7 +109,7 @@ Coupling strength and separability are defined as measurable quantities using st
 
 ### 3. Evaluation Protocols, Tested, With Known Limitations Documented
 
-Three evaluation protocols exist. One of them, the correlation test, produces a false negative on the clearest possible violation (a total, irreversible collapse of system health while the task metric stays flat), because a step-change in health doesn't correlate with a constant metric. This is documented with real numbers in [Empirical Results](NSC_Empirical_Results.md), rather than glossed over. The coupling-sensitivity protocol held up under the same test.
+Five evaluation protocols are implemented and run. The correlation test produces a false negative on a total collapse of system health when the task metric ignores health, and flags it when the metric rewards the damage, so its validity depends on the structure of the metric. A rolling correlation monitor also needs a window shorter than the time the system takes to fail. The coupling-sensitivity protocol held up. Two new protocols test how long an organization can take to respond (alert-to-action latency) and how much warning candidate monitors would have given on a recorded log (trajectory replay). All of this is documented with real numbers in [Empirical Results](NSC_Empirical_Results.md), including the limits of a one-environment simulation.
 
 ### 4. Governance Bridge
 
@@ -116,6 +120,9 @@ NSC translates technical concepts into policy-relevant language:
 - **System health** to "What indicators measure societal or environmental impact, and who chose them?"
 - **NSC violation** to "Does optimization create systemic risk?"
 
+### 5. Separability as an Accountable Decision
+
+Assumptions of independence are made by people: someone chose the objective, the monitors, the safeguards, and whether to keep running after an alert. NSC asks that each such assumption have a named owner, a person with authority to halt the system, and written conditions that void it. This keeps the framework from becoming a way to blame a model for what an organization decided. See [Causal Foundations](NSC_Causal_Foundations.md), Section 6.
 ---
 
 ## Why This Matters Now
@@ -173,20 +180,20 @@ NSC doesn't replace existing alignment approaches. It constrains what kinds of a
 
 ## Current Status
 
-**Version:** 1.1 (August 2026)
-**Status:** Framework complete. One protocol's failure mode identified and documented through simulation. Formal section rebuilt on causal grounds. Still pre-publication, still seeking feedback.
+**Version:** 1.2 (November 2026)
+**Status:** Framework complete. Five evaluation protocols implemented and tested in simulation, with documented limits. Formal section built on causal grounds. Separability treated as an accountable decision. Updated for the 2026 OpenAI and Hugging Face incident and the regulatory response. Still pre-publication, still seeking feedback.
 
 ### What's Ready
 
 - Core framework and causal definitions
-- A runnable simulation implementing all three evaluation protocols
-- Documented, numeric evidence of where one protocol fails
+- A runnable simulation implementing all five evaluation protocols
+- Documented, numeric evidence of where the correlation test fails and where it works
 - Governance applications and policy translation
 - Worked examples and case studies
 
 ### What's Next
 
-- Testing the protocols against a second, structurally different toy environment to see whether the correlation-test failure generalizes
+- Testing the protocols against environments with irreversible harm and non-linear dynamics, and against logs from real systems
 - A proper implementation toolkit beyond the single-file simulation
 - Empirical validation on a real (not simulated) system
 - Academic publication
@@ -254,7 +261,7 @@ A: NSC gives a unifying lens across multiple failure modes and a causal definiti
 A: NSC requirements scale with risk. Low-coupling, small-scale systems face minimal burden. High-risk systems requiring full NSC compliance are typically large enough to handle it.
 
 **Q: Have the evaluation protocols actually been tested?**
-A: Yes, against a small simulated environment, and the results are mixed on purpose. The coupling-sensitivity test worked as intended. The correlation test missed a total system collapse. See [Empirical Results](NSC_Empirical_Results.md) for the numbers.
+A: Yes, against a small simulated environment, and the results are mixed on purpose. The coupling-sensitivity test worked as intended. The correlation test missed a total system collapse when the metric ignored health and caught it when the metric rewarded the damage. Version 1.2 adds latency and replay protocols. The limits are real: one environment family, linear dynamics, recoverable harm. See [Empirical Results](NSC_Empirical_Results.md) for the numbers.
 
 ---
 
@@ -274,4 +281,4 @@ For collaboration, feedback, or questions about implementing NSC in your context
 
 ---
 
-*Last updated: August 2026*
+*Last updated: November 2026*
